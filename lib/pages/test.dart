@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 void main() {
   runApp(ScreenTimeTrackerApp());
@@ -28,12 +29,12 @@ class ScreenTimeTrackerHomePage extends StatefulWidget {
 class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> with SingleTickerProviderStateMixin {
   static const platform = MethodChannel('com.example.screen_time_tracker/screen_time');
   
-  late TabController _tabController;
   Map<String, dynamic> _screenTimeData = {};
   Map<String, dynamic> _unlockData = {};
   bool _isLoading = false;
   bool _hasPermission = false;
   String _errorMessage = '';
+  late TabController _tabController;
 
   @override
   void initState() {
@@ -63,7 +64,7 @@ class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> w
       
       if (hasPermission) {
         _fetchScreenTimeData();
-        _fetchPhoneUnlockCount();
+        _fetchUnlockData();
       }
     } on PlatformException catch (e) {
       setState(() {
@@ -99,6 +100,7 @@ class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> w
     });
     
     try {
+      // Fixed: Properly cast the result
       final result = await platform.invokeMethod('getScreenTimeData');
       
       final Map<String, dynamic> screenTimeData = {};
@@ -136,23 +138,39 @@ class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> w
     }
   }
 
-  Future<void> _fetchPhoneUnlockCount() async {
+  Future<void> _fetchUnlockData() async {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
     
     try {
-      // Changed from getUnlockCount to getPhoneUnlockCount to match native code
       final result = await platform.invokeMethod('getPhoneUnlockCount');
       
+      final Map<String, dynamic> unlockData = {};
+      
+      // Manually convert and cast each value
+      unlockData['totalUnlocks'] = result['totalUnlocks'] as int;
+      
+      final List<Map<String, dynamic>> hourlyUnlocksList = [];
+      final List<dynamic> rawHourlyUnlocks = result['hourlyUnlocks'] as List<dynamic>;
+      
+      for (final hourData in rawHourlyUnlocks) {
+        hourlyUnlocksList.add({
+          'hour': hourData['hour'] as int,
+          'count': hourData['count'] as int,
+        });
+      }
+      
+      unlockData['hourlyUnlocks'] = hourlyUnlocksList;
+      
       setState(() {
-        _unlockData = Map<String, dynamic>.from(result);
+        _unlockData = unlockData;
         _isLoading = false;
       });
     } on PlatformException catch (e) {
       setState(() {
-        _errorMessage = 'Error fetching unlock count: ${e.message}';
+        _errorMessage = 'Error fetching unlock data: ${e.message}';
         _isLoading = false;
       });
     } catch (e) {
@@ -165,7 +183,7 @@ class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> w
 
   Future<void> _refreshData() async {
     await _fetchScreenTimeData();
-    await _fetchPhoneUnlockCount();
+    await _fetchUnlockData();
   }
 
   @override
@@ -174,14 +192,14 @@ class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> w
       appBar: AppBar(
         title: Text('Screen Time Tracker'),
         bottom: _hasPermission && _errorMessage.isEmpty
-            ? TabBar(
-                controller: _tabController,
-                tabs: [
-                  Tab(icon: Icon(Icons.access_time), text: 'Screen Time'),
-                  Tab(icon: Icon(Icons.lock_open), text: 'Unlock Count'),
-                ],
-              )
-            : null,
+          ? TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(text: 'Screen Time', icon: Icon(Icons.access_time)),
+                Tab(text: 'Phone Unlocks', icon: Icon(Icons.lock_open)),
+              ],
+            )
+          : null,
       ),
       body: _isLoading 
         ? Center(child: CircularProgressIndicator())
@@ -193,7 +211,7 @@ class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> w
                 controller: _tabController,
                 children: [
                   _buildScreenTimeList(),
-                  _buildUnlockCountTab(),
+                  _buildUnlockStats(),
                 ],
               ),
       floatingActionButton: _hasPermission ? FloatingActionButton(
@@ -307,24 +325,13 @@ class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> w
     );
   }
 
-  Widget _buildUnlockCountTab() {
+  Widget _buildUnlockStats() {
     if (_unlockData.isEmpty) {
-      return Center(child: Text('No unlock data available. Please try refreshing.'));
+      return Center(child: Text('No unlock data available'));
     }
 
     final totalUnlocks = _unlockData['totalUnlocks'] ?? 0;
     final hourlyUnlocks = _unlockData['hourlyUnlocks'] as List<dynamic>? ?? [];
-    
-    // Find the peak hour
-    int peakHour = 0;
-    int peakCount = 0;
-    for (final hourData in hourlyUnlocks) {
-      final count = hourData['count'] as int;
-      if (count > peakCount) {
-        peakCount = count;
-        peakHour = hourData['hour'] as int;
-      }
-    }
     
     return Column(
       children: [
@@ -337,130 +344,171 @@ class _ScreenTimeTrackerHomePageState extends State<ScreenTimeTrackerHomePage> w
               child: Column(
                 children: [
                   Text(
-                    'Phone Unlocks Today',
+                    'Total Phone Unlocks Today',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '$totalUnlocks',
-                    style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    _getUnlockFeedback(totalUnlocks),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14),
+                    '$totalUnlocks times',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            children: [
-              Text(
-                'Hourly Breakdown',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        if (hourlyUnlocks.isEmpty)
+          Expanded(
+            child: Center(
+              child: Text('No hourly unlock data available. Please try refreshing.'),
+            ),
+          )
+        else
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hourly Unlock Pattern',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 16),
+                      Expanded(
+                        child: _buildUnlockChart(hourlyUnlocks),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              Spacer(),
-              Text(
-                'Peak: ${_formatHour(peakHour)} ($peakCount unlocks)',
-                style: TextStyle(fontSize: 14),
-              ),
-            ],
+            ),
           ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildHourlyChart(hourlyUnlocks),
-          ),
-        ),
       ],
     );
   }
 
-  Widget _buildHourlyChart(List<dynamic> hourlyData) {
-    // Find the maximum value for scaling
-    int maxValue = 1;  // Default to 1 to avoid division by zero
-    for (final hourData in hourlyData) {
-      final count = hourData['count'] as int;
-      if (count > maxValue) maxValue = count;
-    }
-    
-    return ListView.builder(
-      itemCount: 24,
-      itemBuilder: (context, index) {
-        // Find the data for this hour
-        final hourData = hourlyData.firstWhere(
-          (data) => data['hour'] as int == index,
-          orElse: () => {'hour': index, 'count': 0},
-        );
-        
-        final count = hourData['count'] as int;
-        final percentage = count / maxValue;
-        
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 50,
-                child: Text(_formatHour(index)),
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    Container(
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    FractionallySizedBox(
-                      widthFactor: percentage,
-                      child: Container(
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 8),
-              SizedBox(
-                width: 30,
-                child: Text('$count', textAlign: TextAlign.right),
+  Widget _buildUnlockChart(List<dynamic> hourlyUnlocks) {
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: _calculateMaxUnlocks(hourlyUnlocks),
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipBgColor: Colors.blueGrey,
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final hour = hourlyUnlocks[groupIndex]['hour'] as int;
+              final count = hourlyUnlocks[groupIndex]['count'] as int;
+              String timeLabel = _formatHourLabel(hour);
+              return BarTooltipItem(
+                '$timeLabel\n$count unlocks',
+                TextStyle(color: Colors.white),
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: SideTitles(
+            showTitles: true,
+            getTextStyles: (context, value) => TextStyle(
+              color: Colors.black,
+              fontSize: 10,
+            ),
+            margin: 10,
+            getTitles: (double value) {
+              final hour = hourlyUnlocks[value.toInt()]['hour'] as int;
+              // Show only every 3 hours to avoid overcrowding
+              if (hour % 3 == 0) {
+                return _formatHourLabel(hour);
+              }
+              return ''; 
+            },
+          ),
+          leftTitles: SideTitles(
+            showTitles: true,
+            getTextStyles: (context, value) => TextStyle(
+              color: Colors.black,
+              fontSize: 10,
+            ),
+            margin: 10,
+            reservedSize: 30,
+            getTitles: (value) {
+              if (value == 0) return '0';
+              if (value % 1 == 0) return value.toInt().toString();
+              return '';
+            },
+          ),
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.black12, width: 1),
+        ),
+        barGroups: hourlyUnlocks.asMap().entries.map((entry) {
+          final index = entry.key;
+          final hourData = entry.value;
+          final hour = hourData['hour'] as int;
+          final count = hourData['count'] as int;
+          
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                y: count.toDouble(),
+                colors: [
+                  // Color gradient based on time of day
+                  _getColorForHour(hour),
+                ],
+                width: 12,
+                borderRadius: BorderRadius.circular(4),
               ),
             ],
-          ),
-        );
-      },
+          );
+        }).toList(),
+      ),
     );
   }
 
-  String _formatHour(int hour) {
+  double _calculateMaxUnlocks(List<dynamic> hourlyUnlocks) {
+    double maxCount = 0.0;
+    for (final hourData in hourlyUnlocks) {
+      final count = hourData['count'] as int;
+      if (count > maxCount) {
+        maxCount = count.toDouble();
+      }
+    }
+    // Add 20% padding to the max value
+    return maxCount * 1.2;
+  }
+
+  Color _getColorForHour(int hour) {
+    // Morning (6-11): Blue
+    if (hour >= 6 && hour < 12) {
+      return Colors.blue;
+    }
+    // Afternoon (12-17): Green
+    else if (hour >= 12 && hour < 18) {
+      return Colors.green;
+    }
+    // Evening (18-23): Orange
+    else if (hour >= 18 && hour < 24) {
+      return Colors.orange;
+    }
+    // Night (0-5): Purple
+    else {
+      return Colors.purple;
+    }
+  }
+
+  String _formatHourLabel(int hour) {
     final period = hour >= 12 ? 'PM' : 'AM';
     final displayHour = hour % 12 == 0 ? 12 : hour % 12;
     return '$displayHour $period';
-  }
-
-  String _getUnlockFeedback(int unlockCount) {
-    if (unlockCount > 100) {
-      return 'You\'re checking your phone very frequently. Consider setting focus time.';
-    } else if (unlockCount > 50) {
-      return 'That\'s a lot of unlocks! Try to be more mindful of phone usage.';
-    } else if (unlockCount > 25) {
-      return 'Average unlock count. You\'re doing fine!';
-    } else {
-      return 'Great job! You\'re not checking your phone too often.';
-    }
   }
 
   String _formatDuration(int minutes) {

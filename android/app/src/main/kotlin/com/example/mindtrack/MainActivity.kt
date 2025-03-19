@@ -44,6 +44,16 @@ class MainActivity : FlutterActivity() {
                             result.error("PERMISSION_DENIED", "Usage stats permission not granted", null)
                         }
                     }
+                    "getPhoneUnlockCount" -> {
+                        if (hasUsageStatsPermission()) {
+                            val unlockCount = getPhoneUnlockCount()
+                            Log.d(TAG, "Unlock count: $unlockCount")
+                            result.success(unlockCount)
+                        } else {
+                            Log.e(TAG, "Permission denied for usage stats")
+                            result.error("PERMISSION_DENIED", "Usage stats permission not granted", null)
+                        }
+                    }
                     else -> {
                         result.notImplemented()
                     }
@@ -79,6 +89,77 @@ class MainActivity : FlutterActivity() {
             Log.e(TAG, "Error checking permission: ${e.message}", e)
             return false
         }
+    }
+    
+    private fun getPhoneUnlockCount(): HashMap<String, Any> {
+        val result = HashMap<String, Any>()
+        
+        try {
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val startTime = calendar.timeInMillis
+            
+            val endTime = System.currentTimeMillis()
+            Log.d(TAG, "Getting unlock count from $startTime to $endTime")
+            
+            val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
+            
+            var unlockCount = 0
+            val hourlyUnlocks = HashMap<Int, Int>()
+            
+            // Initialize hourly buckets with zeros
+            for (hour in 0..23) {
+                hourlyUnlocks[hour] = 0
+            }
+            
+            if (usageEvents.hasNextEvent()) {
+                val event = UsageEvents.Event()
+                
+                while (usageEvents.hasNextEvent()) {
+                    usageEvents.getNextEvent(event)
+                    
+                    // Check for screen unlock events
+                    if (event.eventType == UsageEvents.Event.KEYGUARD_HIDDEN) {
+                        unlockCount++
+                        
+                        // Get hour of the day for this unlock
+                        val unlockTime = Calendar.getInstance()
+                        unlockTime.timeInMillis = event.timeStamp
+                        val hourOfDay = unlockTime.get(Calendar.HOUR_OF_DAY)
+                        
+                        // Increment the count for this hour
+                        hourlyUnlocks[hourOfDay] = (hourlyUnlocks[hourOfDay] ?: 0) + 1
+                    }
+                }
+            } else {
+                Log.w(TAG, "No usage events found")
+            }
+            
+            result["totalUnlocks"] = unlockCount
+            
+            // Convert hourly unlocks to a list format for Flutter
+            val hourlyUnlocksList = ArrayList<HashMap<String, Any>>()
+            for (hour in 0..23) {
+                val hourData = HashMap<String, Any>()
+                hourData["hour"] = hour
+                hourData["count"] = hourlyUnlocks[hour] ?: 0
+                hourlyUnlocksList.add(hourData)
+            }
+            result["hourlyUnlocks"] = hourlyUnlocksList
+            
+            Log.d(TAG, "Unlock count: $unlockCount")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting unlock count: ${e.message}", e)
+            result["totalUnlocks"] = 0
+            result["hourlyUnlocks"] = ArrayList<HashMap<String, Any>>()
+            result["error"] = "Error: ${e.message}"
+        }
+        
+        return result
     }
     
     private fun getScreenTimeData(): HashMap<String, Any> {
