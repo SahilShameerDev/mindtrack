@@ -121,51 +121,52 @@ class _HomePageState extends State<HomePage> {
                       child: AnimatedContainer(
                         duration: Duration(milliseconds: 300),
                         height: _isExpanded ? 80 : 0,
-                        child: _isExpanded
-                            ? Padding(
-                                padding: const EdgeInsets.only(top: 20),
-                                child: Row(
-                                  children: [
-                                    SizedBox(width: 10),
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        shape: BoxShape.circle,
+                        child:
+                            _isExpanded
+                                ? Padding(
+                                  padding: const EdgeInsets.only(top: 20),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(width: 10),
+                                      Container(
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          shape: BoxShape.circle,
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(width: 20),
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        shape: BoxShape.circle,
+                                      SizedBox(width: 20),
+                                      Container(
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          shape: BoxShape.circle,
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(width: 20),
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        shape: BoxShape.circle,
+                                      SizedBox(width: 20),
+                                      Container(
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          shape: BoxShape.circle,
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(width: 20),
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        shape: BoxShape.circle,
+                                      SizedBox(width: 20),
+                                      Container(
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          shape: BoxShape.circle,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : SizedBox(),
+                                    ],
+                                  ),
+                                )
+                                : SizedBox(),
                       ),
                     ),
                     Spacer(),
@@ -226,9 +227,163 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(118, 255, 140, 0),
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Feeling Good',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Container(
+                      width: 90,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(118, 255, 140, 0),
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Not Bad',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Container(
+                      width: 90,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(118, 255, 140, 0),
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'It\'s Okay',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                  Container(
+                    width: 135,
+                    height: 111,
+                    decoration: BoxDecoration(
+                    color: Color.fromARGB(118, 255, 140, 0),
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                    ),
+                    child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                        'Screen Time',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                          fontWeight: FontWeight.normal,
+                          fontFamily: 'Inter',
+                        ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                        '2h 30m',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 29,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Inter',
+                        ),
+                        ),
+                      ),
+                      ],
+                    ),
+                    ),
+                  ),
+                  SizedBox(width: 40),
+                  Container(
+                    width: 135,
+                    height: 111,
+                    decoration: BoxDecoration(
+                    color: Color.fromARGB(118, 255, 140, 0),
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                    ),
+                    child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                        'Unlock Count',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                          fontWeight: FontWeight.normal,
+                          fontFamily: 'Inter',
+                        ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                        '128',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 29,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Inter',
+                        ),
+                        ),
+                      ),
+                      ],
+                    ),
+                    ),
+                  )
+                  ],
+                )
               ],
             ),
-          )
+          ),
         ],
       ),
     );
