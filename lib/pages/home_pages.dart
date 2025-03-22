@@ -296,89 +296,101 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                  Container(
-                    width: 135,
-                    height: 111,
-                    decoration: BoxDecoration(
-                    color: Color.fromARGB(118, 255, 140, 0),
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                    ),
-                    child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                        'Screen Time',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          fontFamily: 'Inter',
-                        ),
+                  //Screen Time Card
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/screen-time');
+                    },
+                    child: Container(
+                      width: 135,
+                      height: 111,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(118, 255, 140, 0),
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                'Screen Time',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.normal,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                '2h 30m',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 29,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                        '2h 30m',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 29,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Inter',
-                        ),
-                        ),
-                      ),
-                      ],
-                    ),
                     ),
                   ),
                   SizedBox(width: 40),
-                  Container(
-                    width: 135,
-                    height: 111,
-                    decoration: BoxDecoration(
-                    color: Color.fromARGB(118, 255, 140, 0),
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                    ),
-                    child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                        'Unlock Count',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          fontFamily: 'Inter',
-                        ),
-                        ),
+                  // Unlock Count Card
+                    GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/unlock-count');
+                    },
+                    child: Container(
+                      width: 135,
+                      height: 111,
+                      decoration: BoxDecoration(
+                      color: Color.fromARGB(118, 255, 140, 0),
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                        '128',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 29,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Inter',
+                      child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Text(
+                          'Unlock Count',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            fontFamily: 'Inter',
+                          ),
+                          ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Text(
+                          '128',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 29,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Inter',
+                          ),
+                          ),
                         ),
+                        ],
                       ),
-                      ],
+                      ),
                     ),
-                    ),
-                  )
+                    )
                   ],
                 )
               ],
