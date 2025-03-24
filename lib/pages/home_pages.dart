@@ -38,6 +38,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   
   bool _isDrawerOpen = false;
 
+  // Add these new fields for mood description
+  final TextEditingController _moodDescriptionController = TextEditingController();
+  String _todayMoodDescription = '';
+  bool _isEditing = false;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +56,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
     _initHive();
     _fetchData();
+    _loadMoodDescription();
     
     // Start the animation after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -61,6 +67,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   void dispose() {
     _animationController.dispose();
+    _moodDescriptionController.dispose();
     super.dispose();
   }
   
@@ -84,6 +91,55 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     setState(() {
       _selectedMoodIndex = weeklyMoods[today] ?? 0;
     });
+  }
+  
+  // Load saved mood description from Hive
+  Future<void> _loadMoodDescription() async {
+    final today = _getCurrentDayName();
+    final savedDescription = moodBox.get('mood_description_$today');
+    
+    if (savedDescription != null) {
+      setState(() {
+        _todayMoodDescription = savedDescription;
+        _moodDescriptionController.text = savedDescription;
+      });
+    }
+  }
+  
+  // Save mood description to Hive
+  Future<void> _saveMoodDescription(String description) async {
+    final today = _getCurrentDayName();
+    await moodBox.put('mood_description_$today', description);
+    
+    setState(() {
+      _todayMoodDescription = description;
+      _isEditing = false;
+    });
+    
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Mood description saved!'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Color.fromARGB(255, 255, 100, 0),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+  
+  // Use a suggested mood description
+  void _useSuggestedMood(String suggestion) {
+    _moodDescriptionController.text = suggestion;
+    if (!_isEditing) {
+      setState(() {
+        _isEditing = true;
+      });
+    } else {
+      _saveMoodDescription(suggestion);
+    }
   }
   
   // Get current day of week as string
@@ -324,6 +380,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   ),
                 ),
                 SizedBox(height: 10),
+                // User Mood Description Input
                 Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
@@ -344,85 +401,82 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       SizedBox(height: 12),
                       Container(
                         width: 720,
-                        height: 60,
+                        constraints: BoxConstraints(
+                          minHeight: 60,
+                        ),
                         decoration: BoxDecoration(
                           color: Color.fromARGB(168, 254, 140, 0),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Icon(Icons.add, color: Colors.white),
-                              // You can add more widgets here if needed in the future.
-                            ],
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: _isEditing
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _moodDescriptionController,
+                                        decoration: InputDecoration(
+                                          hintText: 'How are you feeling today?',
+                                          hintStyle: TextStyle(color: Colors.white70),
+                                          border: InputBorder.none,
+                                        ),
+                                        style: TextStyle(color: Colors.white),
+                                        maxLines: null,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.check, color: Colors.white),
+                                      onPressed: () {
+                                        _saveMoodDescription(_moodDescriptionController.text);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.close, color: Colors.white),
+                                      onPressed: () {
+                                        setState(() {
+                                          _moodDescriptionController.text = _todayMoodDescription;
+                                          _isEditing = false;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  children: [
+                                    Expanded(
+                                      child: _todayMoodDescription.isEmpty
+                                          ? Text(
+                                              'Tap to add how you feel today...',
+                                              style: TextStyle(color: Colors.white70),
+                                            )
+                                          : Text(
+                                              _todayMoodDescription,
+                                              style: TextStyle(color: Colors.white),
+                                            ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.edit, color: Colors.white),
+                                      onPressed: () {
+                                        setState(() {
+                                          _isEditing = true;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
                         ),
                       ),
                       SizedBox(height: 20),
+                      // User Mood Description Suggestions
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            width: 120,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(118, 255, 140, 0),
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
-                            ),
-                            child: Center(
-                              child: Text(
-                                'Feeling Good',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  fontFamily: 'Inter',
-                                ),
-                              ),
-                            ),
-                          ),
+                          _moodSuggestionButton('Feeling Good'),
                           SizedBox(width: 10),
-                          Container(
-                            width: 90,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(118, 255, 140, 0),
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
-                            ),
-                            child: Center(
-                              child: Text(
-                                'Not Bad',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  fontFamily: 'Inter',
-                                ),
-                              ),
-                            ),
-                          ),
+                          _moodSuggestionButton('Not Bad'),
                           SizedBox(width: 10),
-                          Container(
-                            width: 90,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(118, 255, 140, 0),
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
-                            ),
-                            child: Center(
-                              child: Text(
-                                'It\'s Okay',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  fontFamily: 'Inter',
-                                ),
-                              ),
-                            ),
-                          ),
+                          _moodSuggestionButton('It\'s Okay'),
                         ],
                       ),
                       SizedBox(height: 30),
@@ -776,6 +830,38 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   // Add this method to your class
+  Widget _fadeInWidget({required Widget child, double delay = 0.0}) {
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(
+          parent: _animationController,
+          curve: Interval(
+            delay,
+            delay + 0.4,
+            curve: Curves.easeInOut,
+          ),
+        ),
+      ),
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: Offset(0, 0.2),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Interval(
+              delay,
+              delay + 0.4,
+              curve: Curves.easeInOut,
+            ),
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
+
+  // Add this method to your class
   Widget _buildMoodChart() {
     // List of weekdays in order
     final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -790,136 +876,127 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       }
     }
     
-    return AnimatedBuilder(
-      animation: Listenable.merge([
-        // This will rebuild whenever setState is called
-        ValueNotifier<int>(DateTime.now().millisecondsSinceEpoch),
-      ]),
-      builder: (context, _) {
-        return LineChart(
-          LineChartData(
-            gridData: FlGridData(show: false),
-            titlesData: FlTitlesData(
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              rightTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              topTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: (value, meta) {
-                    if (value < 0 || value >= days.length) {
-                      return const Text('');
-                    }
-                    
-                    // Use abbreviated day names
-                    final abbreviations = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-                    
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        abbreviations[value.toInt()],
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    );
-                  },
-                  reservedSize: 30,
-                ),
-              ),
-            ),
-            borderData: FlBorderData(show: false),
-            minX: 0,
-            maxX: 6,
-            minY: 0,
-            maxY: 8,
-            lineBarsData: [
-              LineChartBarData(
-                spots: spots,
-                isCurved: true,
-                color: Colors.white,
-                barWidth: 4,
-                isStrokeCapRound: true,
-                dotData: FlDotData(
-                  show: true,
-                  getDotPainter: (spot, percent, barData, index) {
-                    // Highlight today's dot
-                    final today = _getCurrentDayName();
-                    final dayIndex = days.indexOf(today);
-                    final isToday = dayIndex == spot.x.toInt();
-                    
-                    return FlDotCirclePainter(
-                      radius: isToday ? 8 : 6,
-                      color: Colors.white,
-                      strokeWidth: isToday ? 3 : 2,
-                      strokeColor: isToday 
-                        ? Color.fromARGB(255, 255, 0, 0)
-                        : Color.fromARGB(255, 255, 64, 0),
-                    );
-                  },
-                ),
-                belowBarData: BarAreaData(
-                  show: true,
-                  color: Color.fromARGB(100, 255, 255, 255),
-                  // Add gradient for better visual effect
-                  gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(150, 255, 255, 255),
-                      Color.fromARGB(50, 255, 255, 255),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                // Add animation for line drawing
-                curveSmoothness: 0.35,
-              ),
-            ],
-            lineTouchData: LineTouchData(
-              touchTooltipData: LineTouchTooltipData(
-           
-                tooltipRoundedRadius: 12,
-                getTooltipItems: (touchedSpots) {
-                  return touchedSpots.map((spot) {
-                    final dayName = days[spot.x.toInt()];
-                    final moodIndex = spot.y.toInt();
-                    
-                    // Map mood index to descriptive text
-                    String moodText = 'Unknown';
-                    switch(moodIndex) {
-                      case 1: moodText = 'Happy'; break;
-                      case 2: moodText = 'Sad'; break;
-                      case 3: moodText = 'Angry'; break;
-                      case 4: moodText = 'Anxious'; break;
-                      case 5: moodText = 'Sleepy'; break;
-                      case 6: moodText = 'Awkward'; break;
-                      case 7: moodText = 'Disappointed'; break;
-                      case 8: moodText = 'Content'; break;
-                    }
-                    
-                    return LineTooltipItem(
-                      '$dayName: $moodText',
-                      TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
-                  }).toList();
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(show: false),
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                if (value < 0 || value >= days.length) {
+                  return const Text('');
                 }
-              ),
+                
+                // Use abbreviated day names
+                final abbreviations = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    abbreviations[value.toInt()],
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              },
+              reservedSize: 30,
             ),
           ),
-         
-        );
-      }
+        ),
+        borderData: FlBorderData(show: false),
+        minX: 0,
+        maxX: 6,
+        minY: 0,
+        maxY: 8,
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            color: Colors.white,
+            barWidth: 4,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, percent, barData, index) {
+                // Highlight today's dot
+                final today = _getCurrentDayName();
+                final dayIndex = days.indexOf(today);
+                final isToday = dayIndex == spot.x.toInt();
+                
+                return FlDotCirclePainter(
+                  radius: isToday ? 8 : 6,
+                  color: Colors.white,
+                  strokeWidth: isToday ? 3 : 2,
+                  strokeColor: isToday 
+                    ? Color.fromARGB(255, 255, 0, 0)
+                    : Color.fromARGB(255, 255, 64, 0),
+                );
+              },
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Color.fromARGB(100, 255, 255, 255),
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(150, 255, 255, 255),
+                  Color.fromARGB(50, 255, 255, 255),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            curveSmoothness: 0.35,
+          ),
+        ],
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+          
+            tooltipRoundedRadius: 12,
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) {
+                final dayName = days[spot.x.toInt()];
+                final moodIndex = spot.y.toInt();
+                
+                // Map mood index to descriptive text
+                String moodText = 'Unknown';
+                switch(moodIndex) {
+                  case 1: moodText = 'Happy'; break;
+                  case 2: moodText = 'Sad'; break;
+                  case 3: moodText = 'Angry'; break;
+                  case 4: moodText = 'Anxious'; break;
+                  case 5: moodText = 'Sleepy'; break;
+                  case 6: moodText = 'Awkward'; break;
+                  case 7: moodText = 'Disappointed'; break;
+                  case 8: moodText = 'Content'; break;
+                }
+                
+                return LineTooltipItem(
+                  '$dayName: $moodText',
+                  TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
+      ),
+      duration: Duration(milliseconds: 800),
+      curve: Curves.easeInOutCubic,
     );
   }
   // Add this widget to create animatable cards
@@ -965,39 +1042,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  // Use FadeTransition for each container
-  Widget _fadeInWidget({required Widget child, double delay = 0.0}) {
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-          parent: _animationController,
-          curve: Interval(
-            delay,
-            delay + 0.4,
-            curve: Curves.easeInOut,
-          ),
-        ),
-      ),
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: Offset(0, 0.2),
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Interval(
-              delay,
-              delay + 0.4,
-              curve: Curves.easeInOut,
-            ),
-          ),
-        ),
-        child: child,
-      ),
-    );
-  }
-
-  // Add this method to your class
+  // Helper method to build the drawer
   Widget _buildDrawer() {
     return AnimatedPositioned(
       duration: Duration(milliseconds: 300),
@@ -1048,12 +1093,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   );
                 },
               ),
+              SizedBox(height: 15),
               // Settings Button
               _drawerButton(
                 icon: Icons.settings,
                 title: 'Settings',
                 onTap: () {
-                  // Close drawer and navigate to settings
                   setState(() => _isDrawerOpen = false);
                   // Navigator.pushNamed(context, '/settings');
                 },
@@ -1107,6 +1152,39 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         onTap: () => setState(() => _isDrawerOpen = false),
         child: Container(
           color: Colors.black.withOpacity(0),
+        ),
+      ),
+    );
+  }
+
+  // Add this missing method to your class
+  Widget _moodSuggestionButton(String text) {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _saveMoodDescription(text);
+      },
+      child: Container(
+        width: text.length > 10 ? 120 : 90,
+        height: 30,
+        decoration: BoxDecoration(
+          color: _todayMoodDescription == text 
+            ? Color.fromARGB(168, 255, 110, 0)
+            : Color.fromARGB(118, 255, 140, 0),
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: _todayMoodDescription == text 
+                ? FontWeight.bold
+                : FontWeight.normal,
+              fontFamily: 'Inter',
+            ),
+          ),
         ),
       ),
     );

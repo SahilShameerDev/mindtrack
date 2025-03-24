@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';  // Add this import for haptic feedback
 import 'package:hive_flutter/hive_flutter.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -8,7 +9,7 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _ageController;
@@ -19,9 +20,52 @@ class _ProfilePageState extends State<ProfilePage> {
   final List<String> _genders = ['Male', 'Female', 'Other'];
   final List<String> _stressLevels = ['Low', 'Moderate', 'High'];
 
+  late AnimationController _fadeController;
+  late AnimationController _buttonController;
+  List<AnimationController> _fieldControllers = [];
+  List<Animation<Offset>> _slideAnimations = [];
+
   @override
   void initState() {
     super.initState();
+    
+    // Setup animation controllers
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 800),
+    );
+    
+    _buttonController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 200),
+    );
+    
+    // Create field animations with staggered delays
+    for (int i = 0; i < 5; i++) {
+      final controller = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 500),
+      );
+      _fieldControllers.add(controller);
+      
+      _slideAnimations.add(
+        Tween<Offset>(
+          begin: Offset(0.2, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: controller,
+          curve: Curves.easeOutCubic,
+        )),
+      );
+      
+      // Stagger the animations
+      Future.delayed(Duration(milliseconds: 100 * i), () {
+        controller.forward();
+      });
+    }
+    
+    _fadeController.forward();
+    
     _loadUserData();
   }
 
@@ -45,19 +89,45 @@ class _ProfilePageState extends State<ProfilePage> {
     await userBox.put('stressLevel', _selectedStressLevel);
 
     if (mounted) {
+      // Animate success notification
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Profile updated successfully!'),
+          content: Row(
+            children: [
+              AnimatedBuilder(
+                animation: AlwaysStoppedAnimation(0),
+                builder: (context, child) {
+                  return Icon(Icons.check_circle, color: Colors.white);
+                },
+              ),
+              SizedBox(width: 10),
+              Text('Profile updated successfully!'),
+            ],
+          ),
           backgroundColor: Color(0xC4FF4000),
           behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          animation: CurvedAnimation(
+            parent: kAlwaysCompleteAnimation,
+            curve: Curves.easeInOut,
+          ),
         ),
       );
-      Navigator.pop(context);
+      
+      // Add a delay before popping to show the animation
+      Future.delayed(Duration(milliseconds: 1500), () {
+        Navigator.pop(context);
+      });
     }
   }
 
   @override
   void dispose() {
+    _fadeController.dispose();
+    _buttonController.dispose();
+    for (var controller in _fieldControllers) {
+      controller.dispose();
+    }
     _nameController.dispose();
     _ageController.dispose();
     _professionController.dispose();
@@ -72,71 +142,72 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Color(0xC4FF4000),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTextField(
-                controller: _nameController,
-                label: 'Name',
-                validator: (value) => 
-                  value?.isEmpty ?? true ? 'Please enter your name' : null,
-              ),
-              SizedBox(height: 20),
-              _buildTextField(
-                controller: _ageController,
-                label: 'Age',
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Please enter your age';
-                  if (int.tryParse(value!) == null) return 'Please enter a valid age';
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              _buildTextField(
-                controller: _professionController,
-                label: 'Profession',
-                validator: (value) => 
-                  value?.isEmpty ?? true ? 'Please enter your profession' : null,
-              ),
-              SizedBox(height: 20),
-              _buildDropdown(
-                label: 'Gender',
-                value: _selectedGender,
-                items: _genders,
-                onChanged: (value) => setState(() => _selectedGender = value!),
-              ),
-              SizedBox(height: 20),
-              _buildDropdown(
-                label: 'Current Stress Level',
-                value: _selectedStressLevel,
-                items: _stressLevels,
-                onChanged: (value) => setState(() => _selectedStressLevel = value!),
-              ),
-              SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      _updateUserData();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xC4FF4000),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+      body: FadeTransition(
+        opacity: _fadeController,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _animatedFormField(
+                  index: 0,
+                  child: _buildTextField(
+                    controller: _nameController,
+                    label: 'Name',
+                    validator: (value) => 
+                      value?.isEmpty ?? true ? 'Please enter your name' : null,
                   ),
-                  child: Text('Save Changes'),
                 ),
-              ),
-            ],
+                SizedBox(height: 20),
+                _animatedFormField(
+                  index: 1,
+                  child: _buildTextField(
+                    controller: _ageController,
+                    label: 'Age',
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Please enter your age';
+                      if (int.tryParse(value!) == null) return 'Please enter a valid age';
+                      return null;
+                    },
+                  ),
+                ),
+                SizedBox(height: 20),
+                _animatedFormField(
+                  index: 2,
+                  child: _buildTextField(
+                    controller: _professionController,
+                    label: 'Profession',
+                    validator: (value) => 
+                      value?.isEmpty ?? true ? 'Please enter your profession' : null,
+                  ),
+                ),
+                SizedBox(height: 20),
+                _animatedFormField(
+                  index: 3,
+                  child: _buildDropdown(
+                    label: 'Gender',
+                    value: _selectedGender,
+                    items: _genders,
+                    onChanged: (value) => setState(() => _selectedGender = value!),
+                  ),
+                ),
+                SizedBox(height: 20),
+                _animatedFormField(
+                  index: 4,
+                  child: _buildDropdown(
+                    label: 'Current Stress Level',
+                    value: _selectedStressLevel,
+                    items: _stressLevels,
+                    onChanged: (value) => setState(() => _selectedStressLevel = value!),
+                  ),
+                ),
+                SizedBox(height: 40),
+                _animatedSaveButton(),
+              ],
+            ),
           ),
         ),
       ),
@@ -151,20 +222,46 @@ class _ProfilePageState extends State<ProfilePage> {
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Color(0xC4FF4000)),
-        ),
-      ),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300),
+      builder: (context, value, child) {
+        return TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          validator: validator,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(
+              color: Color.lerp(Colors.grey, Color(0xC4FF4000), value),
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: Color(0xC4FF4000),
+                width: 2.0,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: Colors.grey,
+                width: 1.0,
+              ),
+            ),
+          ),
+          onTap: () {
+            // Add small shake animation
+            HapticFeedback.selectionClick();
+          },
+          onChanged: (_) {
+            setState(() {}); // Trigger rebuild for animations
+          },
+        );
+      },
     );
   }
 
@@ -201,5 +298,73 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ],
     );
+  }
+
+  // Add this method to your class
+  Widget _animatedFormField({
+    required int index, 
+    required Widget child
+  }) {
+    return FadeTransition(
+      opacity: _fieldControllers[index],
+      child: SlideTransition(
+        position: _slideAnimations[index],
+        child: child,
+      ),
+    );
+  }
+
+  Widget _animatedSaveButton() {
+    return MouseRegion(
+      onEnter: (_) => _buttonController.forward(),
+      onExit: (_) => _buttonController.reverse(),
+      child: AnimatedBuilder(
+        animation: _buttonController,
+        builder: (context, child) {
+          final scale = 1.0 + (0.05 * _buttonController.value);
+          final brightness = 1.0 + (0.2 * _buttonController.value);
+          
+          return Transform.scale(
+            scale: scale,
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    _animateSaveSuccess();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xC4FF4000).withOpacity(brightness),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 4 + (2 * _buttonController.value),
+                ),
+                child: Text(
+                  'Save Changes',
+                  style: TextStyle(
+                    fontSize: 16 + (2 * _buttonController.value),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _animateSaveSuccess() async {
+    // Create ripple effect
+    final scaleController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 600),
+    );
+    
+    await scaleController.forward();
+    await _updateUserData();
+    scaleController.dispose();
   }
 }
