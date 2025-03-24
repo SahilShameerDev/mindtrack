@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,15 +12,73 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   static const platform = MethodChannel('com.example.screen_time_tracker/screen_time');
+  
+  // Hive box for storing mood data
+  late Box moodBox;
+  
+  // Map to store day-mood pairs
+  Map<String, int> weeklyMoods = {
+    'Monday': 0,
+    'Tuesday': 0,
+    'Wednesday': 0,
+    'Thursday': 0, 
+    'Friday': 0,
+    'Saturday': 0,
+    'Sunday': 0
+  };
 
   String _screenTime = 'Loading...';
   String _unlockCount = 'Loading...';
   String _mostUsedApp = 'Loading...';
+  int _selectedMoodIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    _initHive();
     _fetchData();
+  }
+  
+  // Initialize Hive and load saved mood data
+  Future<void> _initHive() async {
+    moodBox = await Hive.openBox('mood_data');
+    _loadMoodData();
+  }
+  
+  // Load saved mood data from Hive
+  void _loadMoodData() {
+    final savedMoods = moodBox.get('weekly_moods');
+    if (savedMoods != null) {
+      setState(() {
+        weeklyMoods = Map<String, int>.from(savedMoods);
+      });
+    }
+    
+    // Get today's selected mood if available
+    final today = _getCurrentDayName();
+    setState(() {
+      _selectedMoodIndex = weeklyMoods[today] ?? 0;
+    });
+  }
+  
+  // Get current day of week as string
+  String _getCurrentDayName() {
+    final now = DateTime.now();
+    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    // DateTime weekday is 1-7 where 1 is Monday, so subtract 1 for zero-indexed array
+    return days[now.weekday - 1];
+  }
+  
+  // Save mood for today
+  Future<void> _saveMood(int moodIndex) async {
+    final today = _getCurrentDayName();
+    setState(() {
+      _selectedMoodIndex = moodIndex;
+      weeklyMoods[today] = moodIndex;
+    });
+    
+    // Save to Hive
+    await moodBox.put('weekly_moods', weeklyMoods);
   }
 
   Future<void> _fetchData() async {
@@ -66,6 +126,57 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isExpanded = !_isExpanded;
     });
+  }
+
+  // Widget for emoji button with selection indicator and feedback
+  Widget _moodEmojiButton(int index, String imagePath) {
+    final isSelected = _selectedMoodIndex == index;
+    
+    return GestureDetector(
+      onTap: () {
+        // Add haptic feedback
+        HapticFeedback.mediumImpact();
+        
+        // Save mood
+        _saveMood(index);
+        
+        // Show feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Mood updated!'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Color.fromARGB(255, 255, 100, 0),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      },
+      child: TweenAnimationBuilder(
+        duration: Duration(milliseconds: isSelected ? 300 : 0),
+        tween: Tween<double>(begin: 1.0, end: isSelected ? 1.2 : 1.0),
+        builder: (context, double scale, child) {
+          return Transform.scale(
+            scale: scale,
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: isSelected 
+                ? BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 3),
+                    borderRadius: BorderRadius.circular(30),
+                  )
+                : null,
+              child: Padding(
+                padding: isSelected ? const EdgeInsets.all(3.0) : EdgeInsets.zero,
+                child: Image.asset(imagePath),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -128,29 +239,13 @@ class _HomePageState extends State<HomePage> {
                       Row(
                         children: [
                           SizedBox(width: 10),
-                          Container(
-                            width: 60,
-                            height: 60,
-                            child: Image.asset('lib/icons/1.png'), // Happy emoji
-                          ),
+                          _moodEmojiButton(1, 'lib/icons/1.png'), // Happy emoji
                           SizedBox(width: 20),
-                          Container(
-                            width: 60,
-                            height: 60,
-                            child: Image.asset('lib/icons/2.png'), // Sad emoji
-                          ),
+                          _moodEmojiButton(2, 'lib/icons/2.png'), // Sad emoji
                           SizedBox(width: 20),
-                          Container(
-                            width: 60,
-                            height: 60,
-                            child: Image.asset('lib/icons/3.png'), // Angry emoji
-                          ),
+                          _moodEmojiButton(3, 'lib/icons/3.png'), // Angry emoji
                           SizedBox(width: 20),
-                          Container(
-                            width: 60,
-                            height: 60,
-                            child: Image.asset('lib/icons/4.png'), // Anxious emoji
-                          ),
+                          _moodEmojiButton(4, 'lib/icons/4.png'), // Anxious emoji
                         ],
                       ),
                       // Second row of Emojis - Only visible when expanded
@@ -167,29 +262,13 @@ class _HomePageState extends State<HomePage> {
                                     child: Row(
                                       children: [
                                         SizedBox(width: 10),
-                                        Container(
-                                          width: 60,
-                                          height: 60,
-                                          child: Image.asset('lib/icons/5.png'), // Sleepy emoji
-                                        ),
+                                        _moodEmojiButton(5, 'lib/icons/5.png'), // Sleepy emoji
                                         SizedBox(width: 20),
-                                        Container(
-                                          width: 60,
-                                          height: 60,
-                                          child: Image.asset('lib/icons/6.png'), // Awkward emoji
-                                        ),
+                                        _moodEmojiButton(6, 'lib/icons/6.png'), // Awkward emoji
                                         SizedBox(width: 20),
-                                        Container(
-                                          width: 60,
-                                          height: 60,
-                                          child: Image.asset('lib/icons/7.png'), // Disappointed emoji
-                                        ),
+                                        _moodEmojiButton(7, 'lib/icons/7.png'), // Disappointed emoji
                                         SizedBox(width: 20),
-                                        Container(
-                                          width: 60,
-                                          height: 60,
-                                          child: Image.asset('lib/icons/8.png'), // Happy emoji
-                                        ),
+                                        _moodEmojiButton(8, 'lib/icons/8.png'), // Another emoji
                                       ],
                                     ),
                                   )
@@ -473,6 +552,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
             SizedBox(height: 20),
+            // Weekly Mood Board
                   Container(
                     height: 200,
                     width: 340,
@@ -585,9 +665,202 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),      
                 SizedBox(height: 20),
+                // Weekly Mood Board
+                SizedBox(height: 20),
+                Container(
+                  height: 270,
+                  width: 340,
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(168, 254, 140, 0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Weekly Mood Board',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Expanded(
+                          child: _buildMoodChart(),
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildDayMoodColumn('Mon', weeklyMoods['Monday'] ?? 0),
+                            _buildDayMoodColumn('Tue', weeklyMoods['Tuesday'] ?? 0),
+                            _buildDayMoodColumn('Wed', weeklyMoods['Wednesday'] ?? 0),
+                            _buildDayMoodColumn('Thu', weeklyMoods['Thursday'] ?? 0),
+                            _buildDayMoodColumn('Fri', weeklyMoods['Friday'] ?? 0),
+                            _buildDayMoodColumn('Sat', weeklyMoods['Saturday'] ?? 0),
+                            _buildDayMoodColumn('Sun', weeklyMoods['Sunday'] ?? 0),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
           ],
         ),
         ),
       );
     }
+  
+  // Helper method to build a day column with mood indicator
+  Widget _buildDayMoodColumn(String day, int moodIndex) {
+    String imagePath = moodIndex > 0 && moodIndex <= 8 
+        ? 'lib/icons/$moodIndex.png' 
+        : 'lib/icons/empty.png';
+    
+    return Column(
+      children: [
+        Text(
+          day,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 8),
+        Container(
+          width: 40,
+          height: 40,
+          child: moodIndex > 0 
+              ? Image.asset(imagePath)
+              : Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white54,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+        ),
+      ],
+    );
   }
+
+  // Add this method to your class
+  Widget _buildMoodChart() {
+    // List of weekdays in order
+    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    
+    // Generate data points for the chart
+    List<FlSpot> spots = [];
+    for (int i = 0; i < days.length; i++) {
+      final moodValue = weeklyMoods[days[i]] ?? 0;
+      if (moodValue > 0) {
+        // Only add spots for days that have mood data
+        spots.add(FlSpot(i.toDouble(), moodValue.toDouble()));
+      }
+    }
+    
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(show: false),
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                if (value < 0 || value >= days.length) {
+                  return const Text('');
+                }
+                
+                // Use abbreviated day names
+                final abbreviations = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    abbreviations[value.toInt()],
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              },
+              reservedSize: 30,
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        minX: 0,
+        maxX: 6,
+        minY: 0,
+        maxY: 8,
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            color: Colors.white,
+            barWidth: 4,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, percent, barData, index) {
+                return FlDotCirclePainter(
+                  radius: 6,
+                  color: Colors.white,
+                  strokeWidth: 2,
+                  strokeColor: Color.fromARGB(255, 255, 64, 0),
+                );
+              },
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Color.fromARGB(100, 255, 255, 255),
+            ),
+          ),
+        ],
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+ 
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) {
+                final dayName = days[spot.x.toInt()];
+                final moodIndex = spot.y.toInt();
+                
+                // Map mood index to descriptive text
+                String moodText = 'Unknown';
+                switch(moodIndex) {
+                  case 1: moodText = 'Happy'; break;
+                  case 2: moodText = 'Sad'; break;
+                  case 3: moodText = 'Angry'; break;
+                  case 4: moodText = 'Anxious'; break;
+                  case 5: moodText = 'Sleepy'; break;
+                  case 6: moodText = 'Awkward'; break;
+                  case 7: moodText = 'Disappointed'; break;
+                  case 8: moodText = 'Content'; break;
+                }
+                
+                return LineTooltipItem(
+                  '$dayName: $moodText',
+                  TextStyle(color: Colors.black),
+                );
+              }).toList();
+            }
+          ),
+        ),
+      ),
+    );
+  }
+}
