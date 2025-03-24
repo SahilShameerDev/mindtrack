@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:mindtrack/pages/profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -1040,12 +1041,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 icon: Icons.person,
                 title: 'Profile',
                 onTap: () {
-                  // Close drawer and navigate to profile
                   setState(() => _isDrawerOpen = false);
-                  // Navigator.pushNamed(context, '/profile');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ProfilePage()),
+                  );
                 },
               ),
-              SizedBox(height: 15),
               // Settings Button
               _drawerButton(
                 icon: Icons.settings,
@@ -1093,16 +1095,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   // Helper method for drawer backdrop
   Widget _buildDrawerBackdrop() {
-    return AnimatedOpacity(
-      opacity: _isDrawerOpen ? 1.0 : 0.0,
-      duration: Duration(milliseconds: 300),
-      child: IgnorePointer(
-        ignoring: !_isDrawerOpen,
-        child: GestureDetector(
-          onTap: () => setState(() => _isDrawerOpen = false),
-          child: Container(
-            color: Colors.black.withOpacity(0.4),
-          ),
+    // Only show backdrop when drawer is open
+    if (!_isDrawerOpen) {
+      return const SizedBox.shrink();
+    }
+    
+    return Positioned.fill(
+      // Position the tap area to start after the drawer
+      left: 250, // Same width as the drawer
+      child: GestureDetector(
+        onTap: () => setState(() => _isDrawerOpen = false),
+        child: Container(
+          color: Colors.black.withOpacity(0),
         ),
       ),
     );

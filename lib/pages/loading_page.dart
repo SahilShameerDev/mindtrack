@@ -16,7 +16,7 @@ class _LoadingPageState extends State<LoadingPage> with SingleTickerProviderStat
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 6),
       vsync: this,
     );
 

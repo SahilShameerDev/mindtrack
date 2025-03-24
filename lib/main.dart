@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mindtrack/pages/home_pages.dart';
+import 'package:mindtrack/pages/profile_page.dart';
 import 'package:mindtrack/pages/screen_time.dart';
 import 'package:mindtrack/pages/unlock_count.dart';
 import 'package:mindtrack/pages/register_page.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
                 '/unlock-count': (context) => UnlockCountPage(
                       platform: const MethodChannel('com.example.screen_time_tracker/screen_time'),
                     ),
+                '/profile': (context) => const ProfilePage(),
               },
             );
           }
