@@ -22,7 +22,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFFFFFF),
-      body: Column(
+      body: SingleChildScrollView(
+        child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           AnimatedContainer(
@@ -51,7 +52,7 @@ class _HomePageState extends State<HomePage> {
                           'Welcome,',
                           style: TextStyle(
                             color: Color(0xFFFFFFFF),
-                            fontSize: 18,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Inter',
                           ),
@@ -67,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                       'Select Today\'s Mood',
                       style: TextStyle(
                         color: Color(0xFFFFFFFF),
-                        fontSize: 16,
+                        fontSize: 20,
                         fontWeight: FontWeight.w400,
                         fontFamily: 'Inter',
                       ),
@@ -80,37 +81,25 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           width: 60,
                           height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
+                          child: Image.asset('lib/icons/1.png'), // Happy emoji
                         ),
                         SizedBox(width: 20),
                         Container(
                           width: 60,
                           height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
+                          child: Image.asset('lib/icons/2.png'), // Sad emoji
                         ),
                         SizedBox(width: 20),
                         Container(
                           width: 60,
                           height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
+                          child: Image.asset('lib/icons/3.png'), // Angry emoji
                         ),
                         SizedBox(width: 20),
                         Container(
                           width: 60,
                           height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
+                          child: Image.asset('lib/icons/4.png'), // Anxious emoji
                         ),
                       ],
                     ),
@@ -131,37 +120,25 @@ class _HomePageState extends State<HomePage> {
                                       Container(
                                         width: 60,
                                         height: 60,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey,
-                                          shape: BoxShape.circle,
-                                        ),
+                                        child: Image.asset('lib/icons/5.png'), // Sleepy emoji
                                       ),
                                       SizedBox(width: 20),
                                       Container(
                                         width: 60,
                                         height: 60,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey,
-                                          shape: BoxShape.circle,
-                                        ),
+                                        child: Image.asset('lib/icons/6.png'), // Awkward emoji
                                       ),
                                       SizedBox(width: 20),
                                       Container(
                                         width: 60,
                                         height: 60,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey,
-                                          shape: BoxShape.circle,
-                                        ),
+                                        child: Image.asset('lib/icons/7.png'), // Disappointed emoji
                                       ),
                                       SizedBox(width: 20),
                                       Container(
                                         width: 60,
                                         height: 60,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey,
-                                          shape: BoxShape.circle,
-                                        ),
+                                        child: Image.asset('lib/icons/8.png'), // Happy emoji
                                       ),
                                     ],
                                   ),
@@ -190,7 +167,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          SizedBox(height: 40),
+          SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -202,7 +179,7 @@ class _HomePageState extends State<HomePage> {
                     'How Was Your Day?',
                     style: TextStyle(
                       color: Color(0xFF000000),
-                      fontSize: 18,
+                      fontSize: 25,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Inter',
                     ),
@@ -213,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                   width: 720,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(168, 255, 139, 0),
+                    color: Color.fromARGB(168, 254, 140, 0),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Padding(
@@ -305,7 +282,7 @@ class _HomePageState extends State<HomePage> {
                       width: 135,
                       height: 111,
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(118, 255, 140, 0),
+                        color: Color.fromARGB(168, 254, 140, 0),
                         borderRadius: BorderRadius.all(Radius.circular(16)),
                       ),
                       child: Padding(
@@ -353,7 +330,7 @@ class _HomePageState extends State<HomePage> {
                       width: 135,
                       height: 111,
                       decoration: BoxDecoration(
-                      color: Color.fromARGB(118, 255, 140, 0),
+                      color: Color.fromARGB(168, 254, 140, 0),
                       borderRadius: BorderRadius.all(Radius.circular(16)),
                       ),
                       child: Padding(
@@ -388,15 +365,178 @@ class _HomePageState extends State<HomePage> {
                         ),
                         ],
                       ),
+                      
                       ),
                     ),
                     )
                   ],
                 )
+                
               ],
             ),
+            
           ),
+
+          //MOST USED APPS
+          SizedBox(height: 5),
+                Container(
+                  height: 120,
+                  width: 340,
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(168, 254, 140, 0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                'Most used apps',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Align(alignment: Alignment.center,
+                              child: Text(
+                                'Whatsapp',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                              ),
+                            ),
+                          ],
+                        ),
+                  ),
+                ),
+          SizedBox(height: 20),
+                Container(
+                  height: 200,
+                  width: 340,
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(168, 254, 140, 0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                'Weekly Mood Board',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                  ),
+                ),
+          SizedBox(height: 20),
+                Container(
+                  height: 220,
+                  width: 340,
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(168, 254, 140, 0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                'Mental Health Suggestions and Tips',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                            Container(
+                            decoration: BoxDecoration(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            child: Column(
+                            children:[
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Align(alignment: Alignment.center,
+                              child: Text(
+                                'Identify stress triggers and address them one at a time.',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Align(alignment: Alignment.center,
+                              child: Text(
+                                'Practice mindfulness or meditation for 10 minutes daily',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Align(alignment: Alignment.center,
+                              child: Text(
+                                'Talk to someone you trust about how you feel.',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                              ),
+                            ),
+                            ],
+                            ),
+                            ),                           
+                          ],
+                        ),
+                  ),
+                ),      
+              SizedBox(height: 20),
         ],
+      ),
       ),
     );
   }
