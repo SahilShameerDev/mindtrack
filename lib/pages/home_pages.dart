@@ -35,6 +35,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
+  bool _isDrawerOpen = false;
+
   @override
   void initState() {
     super.initState();
@@ -205,498 +207,504 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFFFFFF),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              decoration: BoxDecoration(
-                color: Color.fromARGB(192, 255, 64, 0),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(45),
-                  bottomRight: Radius.circular(45),
-                ),
-              ),
-              height: _isExpanded ? _expandedHeight : _collapsedHeight,
-              width: double.infinity,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title Section
-                      SizedBox(height: 15),
-                      Row(
-                        children: [
-                          Text(
-                            'Welcome,',
-                            style: TextStyle(
-                              color: Color(0xFFFFFFFF),
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Inter',
-                            ),
-                          ),
-                          Spacer(),
-                          IconButton(
-                            icon: Icon(Icons.menu, color: Color(0xFFFFFFFF)),
-                            onPressed: () {},
-                          ),
-                        ],
-                      ),
-                      Text(
-                        'Select Today\'s Mood',
-                        style: TextStyle(
-                          color: Color(0xFFFFFFFF),
-                          fontSize: 20,
-                          fontWeight: FontWeight.w400,
-                          fontFamily: 'Inter',
-                        ),
-                      ),
-                      // First row of Emojis
-                      SizedBox(height: 25),
-                      Row(
-                        children: [
-                          SizedBox(width: 10),
-                          _moodEmojiButton(1, 'lib/icons/1.png'), // Happy emoji
-                          SizedBox(width: 20),
-                          _moodEmojiButton(2, 'lib/icons/2.png'), // Sad emoji
-                          SizedBox(width: 20),
-                          _moodEmojiButton(3, 'lib/icons/3.png'), // Angry emoji
-                          SizedBox(width: 20),
-                          _moodEmojiButton(4, 'lib/icons/4.png'), // Anxious emoji
-                        ],
-                      ),
-                      // Second row of Emojis - Only visible when expanded
-                      AnimatedOpacity(
-                        opacity: _isExpanded ? 1.0 : 0.0,
-                        duration: Duration(milliseconds: 300),
-                        child: AnimatedContainer(
-                          duration: Duration(milliseconds: 300),
-                          height: _isExpanded ? 80 : 0,
-                          child:
-                              _isExpanded
-                                  ? Padding(
-                                    padding: const EdgeInsets.only(top: 20),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(width: 10),
-                                        _moodEmojiButton(5, 'lib/icons/5.png'), // Sleepy emoji
-                                        SizedBox(width: 20),
-                                        _moodEmojiButton(6, 'lib/icons/6.png'), // Awkward emoji
-                                        SizedBox(width: 20),
-                                        _moodEmojiButton(7, 'lib/icons/7.png'), // Disappointed emoji
-                                        SizedBox(width: 20),
-                                        _moodEmojiButton(8, 'lib/icons/8.png'), // Another emoji
-                                      ],
-                                    ),
-                                  )
-                                  : SizedBox(),
-                        ),
-                      ),
-                      Spacer(),
-                      // Expand/collapse button
-                      GestureDetector(
-                        onTap: _toggleExpanded,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            width: 120,
-                            height: 5,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'How Was Your Day?',
-                      style: TextStyle(
-                        color: Color(0xFF000000),
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Inter',
-                      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(192, 255, 64, 0),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(45),
+                      bottomRight: Radius.circular(45),
                     ),
                   ),
-                  SizedBox(height: 12),
-                  Container(
-                    width: 720,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(168, 254, 140, 0),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  height: _isExpanded ? _expandedHeight : _collapsedHeight,
+                  width: double.infinity,
+                  child: SafeArea(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.add, color: Colors.white),
-                          // You can add more widgets here if needed in the future.
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 120,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(118, 255, 140, 0),
-                          borderRadius: BorderRadius.all(Radius.circular(16)),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Feeling Good',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              fontFamily: 'Inter',
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Container(
-                        width: 90,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(118, 255, 140, 0),
-                          borderRadius: BorderRadius.all(Radius.circular(16)),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Not Bad',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              fontFamily: 'Inter',
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Container(
-                        width: 90,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(118, 255, 140, 0),
-                          borderRadius: BorderRadius.all(Radius.circular(16)),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'It\'s Okay',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              fontFamily: 'Inter',
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                    //Screen Time Card
-                    _fadeInWidget(
-                      delay: 0.2,
-                      child: _animatedCard(
-                        width: 149,
-                        height: 131,
-                        onTap: () {
-                          Navigator.pushNamed(context, '/screen-time');
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
+                          // Title Section
+                          SizedBox(height: 15),
+                          Row(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                child: Text(
-                                  'Screen Time',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.normal,
-                                    fontFamily: 'Inter',
-                                  ),
+                              Text(
+                                'Welcome,',
+                                style: TextStyle(
+                                  color: Color(0xFFFFFFFF),
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Inter',
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                child: Text(
-                                  _screenTime,
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 29,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Inter',
-                                  ),
-                                ),
+                              Spacer(),
+                              IconButton(
+                                icon: Icon(Icons.menu, color: Color(0xFFFFFFFF)),
+                                onPressed: () => setState(() => _isDrawerOpen = !_isDrawerOpen),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 40),
-                    // Unlock Count Card
-                      _fadeInWidget(
-                        delay: 0.3,
-                        child: _animatedCard(
-                          width: 149,
-                          height: 131,
-                          onTap: () {
-                            Navigator.pushNamed(context, '/unlock-count');
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                  child: Text(
-                                    'Unlock Count',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.normal,
-                                      fontFamily: 'Inter',
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                  child: Text(
-                                    _unlockCount,
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 29,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Inter',
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                  
-                ],
-              ),
-              
-            ),
-
-            //MOST USED APPS
-            SizedBox(height: 5),
-            _fadeInWidget(
-              delay: 0.4,
-              child: _animatedCard(
-                width: 340,
-                height: 120,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                          'Most used apps',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                            fontFamily: 'Inter',
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Align(alignment: Alignment.center,
-                          child: Text(
-                            _mostUsedApp,
+                          Text(
+                            'Select Today\'s Mood',
                             style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 30,
+                              color: Color(0xFFFFFFFF),
+                              fontSize: 20,
                               fontWeight: FontWeight.w400,
                               fontFamily: 'Inter',
                             ),
                           ),
-                        ),
+                          // First row of Emojis
+                          SizedBox(height: 25),
+                          Row(
+                            children: [
+                              SizedBox(width: 10),
+                              _moodEmojiButton(1, 'lib/icons/1.png'), // Happy emoji
+                              SizedBox(width: 20),
+                              _moodEmojiButton(2, 'lib/icons/2.png'), // Sad emoji
+                              SizedBox(width: 20),
+                              _moodEmojiButton(3, 'lib/icons/3.png'), // Angry emoji
+                              SizedBox(width: 20),
+                              _moodEmojiButton(4, 'lib/icons/4.png'), // Anxious emoji
+                            ],
+                          ),
+                          // Second row of Emojis - Only visible when expanded
+                          AnimatedOpacity(
+                            opacity: _isExpanded ? 1.0 : 0.0,
+                            duration: Duration(milliseconds: 300),
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 300),
+                              height: _isExpanded ? 80 : 0,
+                              child:
+                                  _isExpanded
+                                      ? Padding(
+                                        padding: const EdgeInsets.only(top: 20),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(width: 10),
+                                            _moodEmojiButton(5, 'lib/icons/5.png'), // Sleepy emoji
+                                            SizedBox(width: 20),
+                                            _moodEmojiButton(6, 'lib/icons/6.png'), // Awkward emoji
+                                            SizedBox(width: 20),
+                                            _moodEmojiButton(7, 'lib/icons/7.png'), // Disappointed emoji
+                                            SizedBox(width: 20),
+                                            _moodEmojiButton(8, 'lib/icons/8.png'), // Another emoji
+                                          ],
+                                        ),
+                                      )
+                                      : SizedBox(),
+                            ),
+                          ),
+                          Spacer(),
+                          // Expand/collapse button
+                          GestureDetector(
+                            onTap: _toggleExpanded,
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                width: 120,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Weekly Mood Board
-            _fadeInWidget(
-              delay: 0.5,
-              child: _animatedCard(
-                width: 340,
-                height: 270,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Weekly Mood Board',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
-                          fontFamily: 'Inter',
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'How Was Your Day?',
+                          style: TextStyle(
+                            color: Color(0xFF000000),
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Container(
+                        width: 720,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(168, 254, 140, 0),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Icon(Icons.add, color: Colors.white),
+                              // You can add more widgets here if needed in the future.
+                            ],
+                          ),
                         ),
                       ),
                       SizedBox(height: 20),
-                      Expanded(
-                        child: _buildMoodChart(),
-                      ),
-                      SizedBox(height: 10),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _buildDayMoodColumn('Mon', weeklyMoods['Monday'] ?? 0),
-                          _buildDayMoodColumn('Tue', weeklyMoods['Tuesday'] ?? 0),
-                          _buildDayMoodColumn('Wed', weeklyMoods['Wednesday'] ?? 0),
-                          _buildDayMoodColumn('Thu', weeklyMoods['Thursday'] ?? 0),
-                          _buildDayMoodColumn('Fri', weeklyMoods['Friday'] ?? 0),
-                          _buildDayMoodColumn('Sat', weeklyMoods['Saturday'] ?? 0),
-                          _buildDayMoodColumn('Sun', weeklyMoods['Sunday'] ?? 0),
+                          Container(
+                            width: 120,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(118, 255, 140, 0),
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Feeling Good',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Container(
+                            width: 90,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(118, 255, 140, 0),
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Not Bad',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Container(
+                            width: 90,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(118, 255, 140, 0),
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'It\'s Okay',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
+                      SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                        //Screen Time Card
+                        _fadeInWidget(
+                          delay: 0.2,
+                          child: _animatedCard(
+                            width: 149,
+                            height: 131,
+                            onTap: () {
+                              Navigator.pushNamed(context, '/screen-time');
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: Text(
+                                      'Screen Time',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.normal,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: Text(
+                                      _screenTime,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 29,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 40),
+                        // Unlock Count Card
+                          _fadeInWidget(
+                            delay: 0.3,
+                            child: _animatedCard(
+                              width: 149,
+                              height: 131,
+                              onTap: () {
+                                Navigator.pushNamed(context, '/unlock-count');
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                      child: Text(
+                                        'Unlock Count',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.normal,
+                                          fontFamily: 'Inter',
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                      child: Text(
+                                        _unlockCount,
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 29,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Inter',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                      
                     ],
                   ),
+                  
                 ),
-              ),
-            ),
-            SizedBox(height: 20),
-                  Container(
-                    height: 220,
+
+                //MOST USED APPS
+                SizedBox(height: 5),
+                _fadeInWidget(
+                  delay: 0.4,
+                  child: _animatedCard(
                     width: 340,
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(168, 254, 140, 0),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    height: 120,
                     child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Text(
+                              'Most used apps',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: 'Inter',
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Align(alignment: Alignment.center,
+                              child: Text(
+                                _mostUsedApp,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Weekly Mood Board
+                _fadeInWidget(
+                  delay: 0.5,
+                  child: _animatedCard(
+                    width: 340,
+                    height: 270,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Weekly Mood Board',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Inter',
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          Expanded(
+                            child: _buildMoodChart(),
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                child: Text(
-                                  'Mental Health Suggestions and Tips',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Inter',
-                                  ),
-                                ),
-                              ),
-                              Container(
-                              decoration: BoxDecoration(
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              child: Column(
-                              children:[
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                child: Align(alignment: Alignment.center,
-                                child: Text(
-                                  'Identify stress triggers and address them one at a time.',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Inter',
-                                  ),
-                                ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                child: Align(alignment: Alignment.center,
-                                child: Text(
-                                  'Practice mindfulness or meditation for 10 minutes daily',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Inter',
-                                  ),
-                                ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                child: Align(alignment: Alignment.center,
-                                child: Text(
-                                  'Talk to someone you trust about how you feel.',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Inter',
-                                  ),
-                                ),
-                                ),
-                              ),
-                              ],
-                              ),
-                              ),                           
+                              _buildDayMoodColumn('Mon', weeklyMoods['Monday'] ?? 0),
+                              _buildDayMoodColumn('Tue', weeklyMoods['Tuesday'] ?? 0),
+                              _buildDayMoodColumn('Wed', weeklyMoods['Wednesday'] ?? 0),
+                              _buildDayMoodColumn('Thu', weeklyMoods['Thursday'] ?? 0),
+                              _buildDayMoodColumn('Fri', weeklyMoods['Friday'] ?? 0),
+                              _buildDayMoodColumn('Sat', weeklyMoods['Saturday'] ?? 0),
+                              _buildDayMoodColumn('Sun', weeklyMoods['Sunday'] ?? 0),
                             ],
                           ),
+                        ],
+                      ),
                     ),
-                  ),      
+                  ),
+                ),
                 SizedBox(height: 20),
-                
-          ],
-        ),
-        ),
-      );
-    }
+                      Container(
+                        height: 220,
+                        width: 340,
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(168, 254, 140, 0),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: Text(
+                                      'Mental Health Suggestions and Tips',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w400,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                  decoration: BoxDecoration(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  child: Column(
+                                  children:[
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                    child: Align(alignment: Alignment.center,
+                                    child: Text(
+                                      'Identify stress triggers and address them one at a time.',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w400,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                    child: Align(alignment: Alignment.center,
+                                    child: Text(
+                                      'Practice mindfulness or meditation for 10 minutes daily',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w400,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                    child: Align(alignment: Alignment.center,
+                                    child: Text(
+                                      'Talk to someone you trust about how you feel.',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w400,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                    ),
+                                  ),
+                                  ],
+                                  ),
+                                  ),                           
+                                ],
+                              ),
+                        ),
+                      ),      
+                    SizedBox(height: 20),
+                    
+              ],
+            ),
+          ),
+          _buildDrawer(),
+          _buildDrawerBackdrop(),
+        ],
+      ),
+    );
+  }
   
   // Helper method to build a day column with mood indicator
   Widget _buildDayMoodColumn(String day, int moodIndex) {
@@ -984,6 +992,118 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
         ),
         child: child,
+      ),
+    );
+  }
+
+  // Add this method to your class
+  Widget _buildDrawer() {
+    return AnimatedPositioned(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      left: _isDrawerOpen ? 0 : -250,
+      top: 0,
+      bottom: 0,
+      width: 250,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color.fromARGB(245, 255, 128, 64),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'MindTrack',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontFamily: 'Inter',
+                  ),
+                ),
+              ),
+              Divider(color: Colors.white.withOpacity(0.5)),
+              SizedBox(height: 20),
+              // Profile Button
+              _drawerButton(
+                icon: Icons.person,
+                title: 'Profile',
+                onTap: () {
+                  // Close drawer and navigate to profile
+                  setState(() => _isDrawerOpen = false);
+                  // Navigator.pushNamed(context, '/profile');
+                },
+              ),
+              SizedBox(height: 15),
+              // Settings Button
+              _drawerButton(
+                icon: Icons.settings,
+                title: 'Settings',
+                onTap: () {
+                  // Close drawer and navigate to settings
+                  setState(() => _isDrawerOpen = false);
+                  // Navigator.pushNamed(context, '/settings');
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper widget for drawer buttons
+  Widget _drawerButton({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontFamily: 'Inter',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper method for drawer backdrop
+  Widget _buildDrawerBackdrop() {
+    return AnimatedOpacity(
+      opacity: _isDrawerOpen ? 1.0 : 0.0,
+      duration: Duration(milliseconds: 300),
+      child: IgnorePointer(
+        ignoring: !_isDrawerOpen,
+        child: GestureDetector(
+          onTap: () => setState(() => _isDrawerOpen = false),
+          child: Container(
+            color: Colors.black.withOpacity(0.4),
+          ),
+        ),
       ),
     );
   }

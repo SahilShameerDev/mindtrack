@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mindtrack/pages/home_pages.dart';
 import 'package:mindtrack/pages/screen_time.dart';
 import 'package:mindtrack/pages/unlock_count.dart';
-import 'package:mindtrack/pages/loading_page.dart';
+import 'package:mindtrack/pages/register_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Hive.openBox<int>('moodBox'), // Open the Hive box
+      future: Hive.openBox('user_data'),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
@@ -30,9 +30,12 @@ class MyApp extends StatelessWidget {
               ),
             );
           } else {
+            final userBox = Hive.box('user_data');
+            final isRegistered = userBox.get('isRegistered', defaultValue: false);
+            
             return MaterialApp(
               debugShowCheckedModeBanner: false,
-              home: const LoadingPage(),
+              home: isRegistered ? const HomePage() : const RegisterPage(),
               routes: {
                 '/screen-time': (context) => ScreenTimePage(
                       platform: const MethodChannel('com.example.screen_time_tracker/screen_time'),
