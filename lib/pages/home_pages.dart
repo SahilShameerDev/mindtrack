@@ -10,7 +10,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   static const platform = MethodChannel('com.example.screen_time_tracker/screen_time');
   
   // Hive box for storing mood data
@@ -32,11 +32,33 @@ class _HomePageState extends State<HomePage> {
   String _mostUsedApp = 'Loading...';
   int _selectedMoodIndex = 0;
 
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 1200),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
     _initHive();
     _fetchData();
+    
+    // Start the animation after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animationController.forward();
+    });
+  }
+  
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
   
   // Initialize Hive and load saved mood data
@@ -403,17 +425,14 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                     //Screen Time Card
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/screen-time');
-                      },
-                      child: Container(
+                    _fadeInWidget(
+                      delay: 0.2,
+                      child: _animatedCard(
                         width: 149,
                         height: 131,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(168, 254, 140, 0),
-                          borderRadius: BorderRadius.all(Radius.circular(16)),
-                        ),
+                        onTap: () {
+                          Navigator.pushNamed(context, '/screen-time');
+                        },
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
@@ -451,53 +470,49 @@ class _HomePageState extends State<HomePage> {
                     ),
                     SizedBox(width: 40),
                     // Unlock Count Card
-                      GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/unlock-count');
-                      },
-                      child: Container(
-                        width: 149,
-                        height: 131,
-                        decoration: BoxDecoration(
-                        color: Color.fromARGB(168, 254, 140, 0),
-                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                        ),
-                        child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
-                            'Unlock Count',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 12,
-                              fontWeight: FontWeight.normal,
-                              fontFamily: 'Inter',
-                            ),
+                      _fadeInWidget(
+                        delay: 0.3,
+                        child: _animatedCard(
+                          width: 149,
+                          height: 131,
+                          onTap: () {
+                            Navigator.pushNamed(context, '/unlock-count');
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                  child: Text(
+                                    'Unlock Count',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal,
+                                      fontFamily: 'Inter',
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                  child: Text(
+                                    _unlockCount,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 29,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Inter',
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
-                            _unlockCount,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 29,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Inter',
-                            ),
-                            ),
-                          ),
-                          ],
-                        ),
-                        
                         ),
                       ),
-                      )
                     ],
                   )
                   
@@ -508,65 +523,21 @@ class _HomePageState extends State<HomePage> {
 
             //MOST USED APPS
             SizedBox(height: 5),
-                  Container(
-                    height: 120,
-                    width: 340,
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(168, 254, 140, 0),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                child: Text(
-                                  'Most used apps',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Inter',
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Align(alignment: Alignment.center,
-                                child: Text(
-                                  _mostUsedApp,
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Inter',
-                                  ),
-                                ),
-                                ),
-                              ),
-                            ],
-                          ),
-                    ),
-                  ),
-            SizedBox(height: 20),
-            // Weekly Mood Board
-                  Container(
-                  height: 270,
-                  width: 340,
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(168, 254, 140, 0),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Weekly Mood Board',
+            _fadeInWidget(
+              delay: 0.4,
+              child: _animatedCard(
+                width: 340,
+                height: 120,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                          'Most used apps',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 18,
@@ -574,27 +545,69 @@ class _HomePageState extends State<HomePage> {
                             fontFamily: 'Inter',
                           ),
                         ),
-                        SizedBox(height: 20),
-                        Expanded(
-                          child: _buildMoodChart(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Align(alignment: Alignment.center,
+                          child: Text(
+                            _mostUsedApp,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Inter',
+                            ),
+                          ),
                         ),
-                        SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildDayMoodColumn('Mon', weeklyMoods['Monday'] ?? 0),
-                            _buildDayMoodColumn('Tue', weeklyMoods['Tuesday'] ?? 0),
-                            _buildDayMoodColumn('Wed', weeklyMoods['Wednesday'] ?? 0),
-                            _buildDayMoodColumn('Thu', weeklyMoods['Thursday'] ?? 0),
-                            _buildDayMoodColumn('Fri', weeklyMoods['Friday'] ?? 0),
-                            _buildDayMoodColumn('Sat', weeklyMoods['Saturday'] ?? 0),
-                            _buildDayMoodColumn('Sun', weeklyMoods['Sunday'] ?? 0),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
+            ),
+            SizedBox(height: 20),
+            // Weekly Mood Board
+            _fadeInWidget(
+              delay: 0.5,
+              child: _animatedCard(
+                width: 340,
+                height: 270,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Weekly Mood Board',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Expanded(
+                        child: _buildMoodChart(),
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildDayMoodColumn('Mon', weeklyMoods['Monday'] ?? 0),
+                          _buildDayMoodColumn('Tue', weeklyMoods['Tuesday'] ?? 0),
+                          _buildDayMoodColumn('Wed', weeklyMoods['Wednesday'] ?? 0),
+                          _buildDayMoodColumn('Thu', weeklyMoods['Thursday'] ?? 0),
+                          _buildDayMoodColumn('Fri', weeklyMoods['Friday'] ?? 0),
+                          _buildDayMoodColumn('Sat', weeklyMoods['Saturday'] ?? 0),
+                          _buildDayMoodColumn('Sun', weeklyMoods['Sunday'] ?? 0),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             SizedBox(height: 20),
                   Container(
                     height: 220,
@@ -678,8 +691,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),      
                 SizedBox(height: 20),
-                // Weekly Mood Board
-                SizedBox(height: 20),
                 
           ],
         ),
@@ -693,29 +704,65 @@ class _HomePageState extends State<HomePage> {
         ? 'lib/icons/$moodIndex.png' 
         : 'lib/icons/empty.png';
     
-    return Column(
-      children: [
-        Text(
-          day,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+    // Check if this is today
+    final today = _getCurrentDayName().substring(0, 3);
+    final isToday = day == today.substring(0, 3);
+    
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      padding: EdgeInsets.all(isToday ? 4 : 0),
+      decoration: isToday ? BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ) : null,
+      child: Column(
+        children: [
+          Text(
+            day,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
+              color: isToday ? Colors.black : null,
+            ),
           ),
-        ),
-        SizedBox(height: 8),
-        Container(
-          width: 40,
-          height: 40,
-          child: moodIndex > 0 
-              ? Image.asset(imagePath)
-              : Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white54,
-                    shape: BoxShape.circle,
-                  ),
+          SizedBox(height: 8),
+          // Animated appearance when mood changes
+          AnimatedSwitcher(
+            duration: Duration(milliseconds: 500),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return ScaleTransition(
+                scale: animation,
+                child: FadeTransition(
+                  opacity: animation,
+                  child: child,
                 ),
-        ),
-      ],
+              );
+            },
+            child: Container(
+              key: ValueKey<int>(moodIndex),
+              width: 40,
+              height: 40,
+              decoration: isToday ? BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.5),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  )
+                ],
+              ) : null,
+              child: moodIndex > 0 
+                  ? Image.asset(imagePath)
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white54,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -734,104 +781,209 @@ class _HomePageState extends State<HomePage> {
       }
     }
     
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(show: false),
-        titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                if (value < 0 || value >= days.length) {
-                  return const Text('');
-                }
-                
-                // Use abbreviated day names
-                final abbreviations = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-                
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    abbreviations[value.toInt()],
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        // This will rebuild whenever setState is called
+        ValueNotifier<int>(DateTime.now().millisecondsSinceEpoch),
+      ]),
+      builder: (context, _) {
+        return LineChart(
+          LineChartData(
+            gridData: FlGridData(show: false),
+            titlesData: FlTitlesData(
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              topTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) {
+                    if (value < 0 || value >= days.length) {
+                      return const Text('');
+                    }
+                    
+                    // Use abbreviated day names
+                    final abbreviations = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                    
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        abbreviations[value.toInt()],
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  },
+                  reservedSize: 30,
+                ),
+              ),
+            ),
+            borderData: FlBorderData(show: false),
+            minX: 0,
+            maxX: 6,
+            minY: 0,
+            maxY: 8,
+            lineBarsData: [
+              LineChartBarData(
+                spots: spots,
+                isCurved: true,
+                color: Colors.white,
+                barWidth: 4,
+                isStrokeCapRound: true,
+                dotData: FlDotData(
+                  show: true,
+                  getDotPainter: (spot, percent, barData, index) {
+                    // Highlight today's dot
+                    final today = _getCurrentDayName();
+                    final dayIndex = days.indexOf(today);
+                    final isToday = dayIndex == spot.x.toInt();
+                    
+                    return FlDotCirclePainter(
+                      radius: isToday ? 8 : 6,
+                      color: Colors.white,
+                      strokeWidth: isToday ? 3 : 2,
+                      strokeColor: isToday 
+                        ? Color.fromARGB(255, 255, 0, 0)
+                        : Color.fromARGB(255, 255, 64, 0),
+                    );
+                  },
+                ),
+                belowBarData: BarAreaData(
+                  show: true,
+                  color: Color.fromARGB(100, 255, 255, 255),
+                  // Add gradient for better visual effect
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(150, 255, 255, 255),
+                      Color.fromARGB(50, 255, 255, 255),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
-                );
-              },
-              reservedSize: 30,
-            ),
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        minX: 0,
-        maxX: 6,
-        minY: 0,
-        maxY: 8,
-        lineBarsData: [
-          LineChartBarData(
-            spots: spots,
-            isCurved: true,
-            color: Colors.white,
-            barWidth: 4,
-            isStrokeCapRound: true,
-            dotData: FlDotData(
-              show: true,
-              getDotPainter: (spot, percent, barData, index) {
-                return FlDotCirclePainter(
-                  radius: 6,
-                  color: Colors.white,
-                  strokeWidth: 2,
-                  strokeColor: Color.fromARGB(255, 255, 64, 0),
-                );
-              },
-            ),
-            belowBarData: BarAreaData(
-              show: true,
-              color: Color.fromARGB(100, 255, 255, 255),
-            ),
-          ),
-        ],
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
- 
-            getTooltipItems: (touchedSpots) {
-              return touchedSpots.map((spot) {
-                final dayName = days[spot.x.toInt()];
-                final moodIndex = spot.y.toInt();
-                
-                // Map mood index to descriptive text
-                String moodText = 'Unknown';
-                switch(moodIndex) {
-                  case 1: moodText = 'Happy'; break;
-                  case 2: moodText = 'Sad'; break;
-                  case 3: moodText = 'Angry'; break;
-                  case 4: moodText = 'Anxious'; break;
-                  case 5: moodText = 'Sleepy'; break;
-                  case 6: moodText = 'Awkward'; break;
-                  case 7: moodText = 'Disappointed'; break;
-                  case 8: moodText = 'Content'; break;
+                ),
+                // Add animation for line drawing
+                curveSmoothness: 0.35,
+              ),
+            ],
+            lineTouchData: LineTouchData(
+              touchTooltipData: LineTouchTooltipData(
+           
+                tooltipRoundedRadius: 12,
+                getTooltipItems: (touchedSpots) {
+                  return touchedSpots.map((spot) {
+                    final dayName = days[spot.x.toInt()];
+                    final moodIndex = spot.y.toInt();
+                    
+                    // Map mood index to descriptive text
+                    String moodText = 'Unknown';
+                    switch(moodIndex) {
+                      case 1: moodText = 'Happy'; break;
+                      case 2: moodText = 'Sad'; break;
+                      case 3: moodText = 'Angry'; break;
+                      case 4: moodText = 'Anxious'; break;
+                      case 5: moodText = 'Sleepy'; break;
+                      case 6: moodText = 'Awkward'; break;
+                      case 7: moodText = 'Disappointed'; break;
+                      case 8: moodText = 'Content'; break;
+                    }
+                    
+                    return LineTooltipItem(
+                      '$dayName: $moodText',
+                      TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  }).toList();
                 }
-                
-                return LineTooltipItem(
-                  '$dayName: $moodText',
-                  TextStyle(color: Colors.black),
-                );
-              }).toList();
-            }
+              ),
+            ),
+          ),
+         
+        );
+      }
+    );
+  }
+  // Add this widget to create animatable cards
+  Widget _animatedCard({
+    required double width,
+    required double height,
+    required Widget child,
+    VoidCallback? onTap,
+  }) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isHovered = false;
+        
+        return GestureDetector(
+          onTap: onTap,
+          onTapDown: (_) => setState(() => isHovered = true),
+          onTapUp: (_) => setState(() => isHovered = false),
+          onTapCancel: () => setState(() => isHovered = false),
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 150),
+            width: width,
+            height: height,
+            transform: isHovered 
+                ? (Matrix4.identity()..scale(1.02))
+                : Matrix4.identity(),
+            decoration: BoxDecoration(
+              color: Color.fromARGB(168, 254, 140, 0),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: isHovered
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      )
+                    ]
+                  : [],
+            ),
+            child: child,
+          ),
+        );
+      }
+    );
+  }
+
+  // Use FadeTransition for each container
+  Widget _fadeInWidget({required Widget child, double delay = 0.0}) {
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(
+          parent: _animationController,
+          curve: Interval(
+            delay,
+            delay + 0.4,
+            curve: Curves.easeInOut,
           ),
         ),
+      ),
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: Offset(0, 0.2),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Interval(
+              delay,
+              delay + 0.4,
+              curve: Curves.easeInOut,
+            ),
+          ),
+        ),
+        child: child,
       ),
     );
   }

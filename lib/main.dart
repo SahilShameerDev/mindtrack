@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mindtrack/pages/home_pages.dart';
 import 'package:mindtrack/pages/screen_time.dart';
 import 'package:mindtrack/pages/unlock_count.dart';
+import 'package:mindtrack/pages/loading_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
           } else {
             return MaterialApp(
               debugShowCheckedModeBanner: false,
-              home: const HomePage(),
+              home: const LoadingPage(),
               routes: {
                 '/screen-time': (context) => ScreenTimePage(
                       platform: const MethodChannel('com.example.screen_time_tracker/screen_time'),
@@ -45,8 +46,11 @@ class MyApp extends StatelessWidget {
         } else {
           return MaterialApp(
             home: Scaffold(
+              backgroundColor: Color(0xC4FF4000),
               body: Center(
-                child: CircularProgressIndicator(), // Show a loading indicator while Hive initializes
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
               ),
             ),
           );
