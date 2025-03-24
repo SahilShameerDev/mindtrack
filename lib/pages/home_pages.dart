@@ -408,8 +408,8 @@ class _HomePageState extends State<HomePage> {
                         Navigator.pushNamed(context, '/screen-time');
                       },
                       child: Container(
-                        width: 135,
-                        height: 111,
+                        width: 149,
+                        height: 131,
                         decoration: BoxDecoration(
                           color: Color.fromARGB(168, 254, 140, 0),
                           borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -456,8 +456,8 @@ class _HomePageState extends State<HomePage> {
                         Navigator.pushNamed(context, '/unlock-count');
                       },
                       child: Container(
-                        width: 135,
-                        height: 111,
+                        width: 149,
+                        height: 131,
                         decoration: BoxDecoration(
                         color: Color.fromARGB(168, 254, 140, 0),
                         borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -554,34 +554,47 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 20),
             // Weekly Mood Board
                   Container(
-                    height: 200,
-                    width: 340,
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(168, 254, 140, 0),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                child: Text(
-                                  'Weekly Mood Board',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Inter',
-                                  ),
-                                ),
-                              ),
-                            ],
+                  height: 270,
+                  width: 340,
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(168, 254, 140, 0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Weekly Mood Board',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            fontFamily: 'Inter',
                           ),
+                        ),
+                        SizedBox(height: 20),
+                        Expanded(
+                          child: _buildMoodChart(),
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildDayMoodColumn('Mon', weeklyMoods['Monday'] ?? 0),
+                            _buildDayMoodColumn('Tue', weeklyMoods['Tuesday'] ?? 0),
+                            _buildDayMoodColumn('Wed', weeklyMoods['Wednesday'] ?? 0),
+                            _buildDayMoodColumn('Thu', weeklyMoods['Thursday'] ?? 0),
+                            _buildDayMoodColumn('Fri', weeklyMoods['Friday'] ?? 0),
+                            _buildDayMoodColumn('Sat', weeklyMoods['Saturday'] ?? 0),
+                            _buildDayMoodColumn('Sun', weeklyMoods['Sunday'] ?? 0),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
+                ),
             SizedBox(height: 20),
                   Container(
                     height: 220,
@@ -667,48 +680,7 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(height: 20),
                 // Weekly Mood Board
                 SizedBox(height: 20),
-                Container(
-                  height: 270,
-                  width: 340,
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(168, 254, 140, 0),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Weekly Mood Board',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                            fontFamily: 'Inter',
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        Expanded(
-                          child: _buildMoodChart(),
-                        ),
-                        SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildDayMoodColumn('Mon', weeklyMoods['Monday'] ?? 0),
-                            _buildDayMoodColumn('Tue', weeklyMoods['Tuesday'] ?? 0),
-                            _buildDayMoodColumn('Wed', weeklyMoods['Wednesday'] ?? 0),
-                            _buildDayMoodColumn('Thu', weeklyMoods['Thursday'] ?? 0),
-                            _buildDayMoodColumn('Fri', weeklyMoods['Friday'] ?? 0),
-                            _buildDayMoodColumn('Sat', weeklyMoods['Saturday'] ?? 0),
-                            _buildDayMoodColumn('Sun', weeklyMoods['Sunday'] ?? 0),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                
           ],
         ),
         ),
