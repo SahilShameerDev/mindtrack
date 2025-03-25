@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:mindtrack/pages/profile_page.dart';
+import 'package:mindtrack/pages/mental_health_insights_page.dart';
+import 'package:mindtrack/utils/connection_checker.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -668,41 +670,66 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   ),
                 ),
                 SizedBox(height: 20),
-                      Container(
-                        height: 220,
-                        width: 340,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(168, 254, 140, 0),
-                          borderRadius: BorderRadius.circular(10),
+                Container(
+                  height: 220,
+                  width: 340,
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(168, 254, 140, 0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: GestureDetector( // Add GestureDetector here
+                    onTap: () async {
+                      // Get user data from Hive first - this doesn't need to wait for connection check
+                      final userBox = Hive.box('user_data');
+                      
+                      // Prepare the data to send to backend
+                      Map<String, dynamic> userData = {
+                        'weekly_moods': weeklyMoods,
+                        'screen_time': _screenTime,
+                        'unlock_count': _unlockCount,
+                        'most_used_app': _mostUsedApp,
+                        'mood_description': _todayMoodDescription,
+                        'profession': userBox.get('profession', defaultValue: 'Not specified'),
+                        'gender': userBox.get('gender', defaultValue: 'Not specified'),
+                        'age': userBox.get('age', defaultValue: 'Not specified')
+                      };
+                      
+                      // Navigate directly to insights page - it will handle connection internally
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MentalHealthInsightsPage(userData: userData),
                         ),
-                        child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: Text(
-                                      'Mental Health Suggestions and Tips',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: 'Inter',
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                  decoration: BoxDecoration(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  child: Column(
-                                  children:[
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    child: Align(alignment: Alignment.center,
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Text(
+                              'Mental Health Suggestions and Tips',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: 'Inter',
+                              ),
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              children:[
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                  child: Align(alignment: Alignment.center,
                                     child: Text(
                                       'Identify stress triggers and address them one at a time.',
                                       style: TextStyle(
@@ -712,11 +739,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                         fontFamily: 'Inter',
                                       ),
                                     ),
-                                    ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    child: Align(alignment: Alignment.center,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                  child: Align(alignment: Alignment.center,
                                     child: Text(
                                       'Practice mindfulness or meditation for 10 minutes daily',
                                       style: TextStyle(
@@ -726,11 +753,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                         fontFamily: 'Inter',
                                       ),
                                     ),
-                                    ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    child: Align(alignment: Alignment.center,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                  child: Align(alignment: Alignment.center,
                                     child: Text(
                                       'Talk to someone you trust about how you feel.',
                                       style: TextStyle(
@@ -740,16 +767,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                         fontFamily: 'Inter',
                                       ),
                                     ),
-                                    ),
                                   ),
-                                  ],
-                                  ),
-                                  ),                           
-                                ],
-                              ),
-                        ),
-                      ),      
-                    SizedBox(height: 20),
+                                ),
+                              ],
+                            ),
+                          ),                           
+                        ],
+                      ),
+                    ),
+                  ),
+                ),      
+                SizedBox(height: 20),
                     
               ],
             ),
